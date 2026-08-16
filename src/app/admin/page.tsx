@@ -42,18 +42,7 @@ function AdminContent() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"config" | "litiges" | "benevoles">("config");
 
-  // Guard: only organisateur
-  if (user?.role !== "organisateur") {
-    return (
-      <div className="card text-center py-10">
-        <div className="text-5xl mb-4">🔒</div>
-        <p className="font-bold text-gray-700">Accès réservé à l'organisateur</p>
-        <p className="text-sm text-gray-500 mt-2">
-          Connectez-vous avec un compte organisateur
-        </p>
-      </div>
-    );
-  }
+  const isOrganisateur = user?.role === "organisateur";
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -71,8 +60,23 @@ function AdminContent() {
   }, []);
 
   useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+    if (isOrganisateur) {
+      fetchAll();
+    }
+  }, [isOrganisateur, fetchAll]);
+
+  // Guard: only organisateur
+  if (!isOrganisateur) {
+    return (
+      <div className="card text-center py-10">
+        <div className="text-5xl mb-4">🔒</div>
+        <p className="font-bold text-gray-700">Accès réservé à l&apos;organisateur</p>
+        <p className="text-sm text-gray-500 mt-2">
+          Connectez-vous avec un compte organisateur
+        </p>
+      </div>
+    );
+  }
 
   const saveConfig = async () => {
     const res = await fetch("/api/config", {
