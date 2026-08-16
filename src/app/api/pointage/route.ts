@@ -51,6 +51,19 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // Chercher dans les recruteurs (participants)
+    const participantResult = await db
+      .select()
+      .from(participants)
+      .where(eq(participants.telephone, telNorm));
+
+    if (participantResult.length > 0) {
+      return NextResponse.json({
+        type: "recruteur",
+        recruteur: participantResult[0],
+      });
+    }
+
     // Chercher dans les donneurs spontanés
     const spontaneResult = await db
       .select()
@@ -128,6 +141,61 @@ export async function POST(req: NextRequest) {
       });
 
       return NextResponse.json({ success: true, action: "presence_validee" });
+    }
+
+    if (action === "valider_presence_recruteur") {
+      const { participantId } = body;
+      if (!participantId) {
+        return NextResponse.json(
+          { error: "participantId requis" },
+          { status: 400 }
+        );
+      }
+
+      const existingPart = await db
+        .select()
+        .from(participants)
+        .where(eq(participants.id, participantId));
+
+      if (existingPart.length === 0) {
+        return NextResponse.json(
+          { error: "Recruteur introuvable" },
+          { status: 404 }
+        );
+      }
+
+      if (existingPart[0].timestampPointage) {
+        return NextResponse.json(
+          {
+            error: "deja_pointe",
+            message: `Recruteur déjà pointé à ${existingPart[0].timestampPointage.toISOString()}`,
+            timestampPointage: existingPart[0].timestampPointage,
+          },
+          { status: 409 }
+        );
+      }
+
+      await db
+        .update(participants)
+        .set({
+          timestampPointage: new Date(),
+          pointeParBenevoleId: benevoleId ?? null,
+        })
+        .where(eq(participants.id, participantId));
+
+      await db.insert(auditLog).values({
+        id: newId(),
+        benevoleId: benevoleId ?? null,
+        action: "VALIDER_PRESENCE_RECRUTEUR",
+        entityType: "participant",
+        entityId: participantId,
+        details: JSON.stringify({ telephone: telNorm }),
+      });
+
+      return NextResponse.json({
+        success: true,
+        action: "presence_recruteur_validee",
+      });
     }
 
     if (action === "enregistrer_spontane") {

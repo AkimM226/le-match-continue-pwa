@@ -6,7 +6,7 @@ import {
   donneursSpontanes,
   matchConfig,
 } from "@/db/schema";
-import { eq, count, sql } from "drizzle-orm";
+import { eq, count, isNotNull } from "drizzle-orm";
 
 export async function GET() {
   try {
@@ -55,6 +55,20 @@ export async function GET() {
       .from(donneursSpontanes);
     const spontanes = Number(spontanesRows[0]?.nb ?? 0);
 
+    // Recruteurs présents (pointés J2)
+    const recruteursPresentsRows = await db
+      .select({ genre: participants.genre, nb: count(participants.id) })
+      .from(participants)
+      .where(isNotNull(participants.timestampPointage))
+      .groupBy(participants.genre);
+
+    let recruteursPresentsGarcons = 0;
+    let recruteursPresentsFilles = 0;
+    for (const r of recruteursPresentsRows) {
+      if (r.genre === "M") recruteursPresentsGarcons = Number(r.nb);
+      else recruteursPresentsFilles = Number(r.nb);
+    }
+
     // Recruteurs
     const recruteursRows = await db
       .select({ genre: participants.genre, nb: count(participants.id) })
@@ -69,10 +83,16 @@ export async function GET() {
     }
 
     const totalPresents =
-      garcons_presente + filles_presente + spontanes;
+      garcons_presente +
+      filles_presente +
+      recruteursPresentsGarcons +
+      recruteursPresentsFilles +
+      spontanes;
 
-    const scoreGarcons = config.scoreBonusGarcons + garcons_presente;
-    const scoreFilles = config.scoreBonusFilles + filles_presente;
+    const scoreGarcons =
+      config.scoreBonusGarcons + garcons_presente + recruteursPresentsGarcons;
+    const scoreFilles =
+      config.scoreBonusFilles + filles_presente + recruteursPresentsFilles;
 
     return NextResponse.json({
       config,
@@ -81,6 +101,7 @@ export async function GET() {
         promesses_total: garcons_en_attente + garcons_presente + garcons_en_litige,
         en_attente: garcons_en_attente,
         presente: garcons_presente,
+        recruteurs_presents: recruteursPresentsGarcons,
         en_litige: garcons_en_litige,
         score: scoreGarcons,
       },
@@ -89,6 +110,7 @@ export async function GET() {
         promesses_total: filles_en_attente + filles_presente + filles_en_litige,
         en_attente: filles_en_attente,
         presente: filles_presente,
+        recruteurs_presents: recruteursPresentsFilles,
         en_litige: filles_en_litige,
         score: scoreFilles,
       },

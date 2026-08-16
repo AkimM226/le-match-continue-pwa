@@ -13,6 +13,7 @@ interface DashboardData {
     recruteurs: number;
     promesses_total: number;
     presente: number;
+    recruteurs_presents: number;
     en_attente: number;
     en_litige: number;
     score: number;
@@ -21,6 +22,7 @@ interface DashboardData {
     recruteurs: number;
     promesses_total: number;
     presente: number;
+    recruteurs_presents: number;
     en_attente: number;
     en_litige: number;
     score: number;
@@ -195,7 +197,7 @@ export default function PublicPage() {
                 />
                 <ScoreLine
                   label="✅ Présents"
-                  value={data?.garcons.presente ?? 0}
+                  value={(data?.garcons.presente ?? 0) + (data?.garcons.recruteurs_presents ?? 0)}
                   highlight
                 />
               </div>
@@ -257,7 +259,7 @@ export default function PublicPage() {
                 />
                 <ScoreLine
                   label="✅ Présents"
-                  value={data?.filles.presente ?? 0}
+                  value={(data?.filles.presente ?? 0) + (data?.filles.recruteurs_presents ?? 0)}
                   highlight
                 />
               </div>

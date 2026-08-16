@@ -5,6 +5,7 @@ interface TeamData {
   recruteurs: number;
   promesses_total: number;
   presente: number;
+  recruteurs_presents: number;
   en_attente: number;
   en_litige: number;
   score: number;
@@ -194,7 +195,11 @@ export default function ScoreCard({
           <div className="relative space-y-1.5 text-sm">
             <StatLine label="Bonus match" value={`+${bonusGarcons}`} />
             <StatLine label="Promesses" value={garcons.promesses_total} />
-            <StatLine label="✅ Présents" value={garcons.presente} color="text-green-600" />
+            <StatLine
+              label="✅ Présents"
+              value={garcons.presente + garcons.recruteurs_presents}
+              color="text-green-600"
+            />
             {garcons.en_litige > 0 && (
               <StatLine label="⚠️ Litiges" value={garcons.en_litige} color="text-red-500" />
             )}
@@ -253,7 +258,11 @@ export default function ScoreCard({
           <div className="relative space-y-1.5 text-sm">
             <StatLine label="Bonus match" value={`+${bonusFilles}`} />
             <StatLine label="Promesses" value={filles.promesses_total} />
-            <StatLine label="✅ Présents" value={filles.presente} color="text-green-600" />
+            <StatLine
+              label="✅ Présents"
+              value={filles.presente + filles.recruteurs_presents}
+              color="text-green-600"
+            />
             {filles.en_litige > 0 && (
               <StatLine label="⚠️ Litiges" value={filles.en_litige} color="text-red-500" />
             )}

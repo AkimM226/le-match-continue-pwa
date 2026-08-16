@@ -15,6 +15,7 @@ interface DashboardData {
     recruteurs: number;
     promesses_total: number;
     presente: number;
+    recruteurs_presents: number;
     en_attente: number;
     en_litige: number;
     score: number;
@@ -23,6 +24,7 @@ interface DashboardData {
     recruteurs: number;
     promesses_total: number;
     presente: number;
+    recruteurs_presents: number;
     en_attente: number;
     en_litige: number;
     score: number;
@@ -105,7 +107,11 @@ function DashboardContent() {
 
   const totalLitiges = data.garcons.en_litige + data.filles.en_litige;
   const totalPromesses = data.garcons.promesses_total + data.filles.promesses_total;
-  const totalPresences = data.garcons.presente + data.filles.presente;
+  const totalPresences =
+    data.garcons.presente +
+    data.filles.presente +
+    data.garcons.recruteurs_presents +
+    data.filles.recruteurs_presents;
   const totalRecruteurs = data.garcons.recruteurs + data.filles.recruteurs;
 
   return (

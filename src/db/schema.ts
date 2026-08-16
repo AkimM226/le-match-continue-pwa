@@ -44,6 +44,8 @@ export const participants = pgTable("participants", {
   genre: genreEnum("genre").notNull(),
   roleParticipant: roleEnum("role_participant").notNull(),
   saisiParBenevoleId: varchar("saisi_par_benevole_id", { length: 36 }),
+  pointeParBenevoleId: varchar("pointe_par_benevole_id", { length: 36 }),
+  timestampPointage: timestamp("timestamp_pointage"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
