@@ -1,0 +1,22 @@
+{
+  "name": "Le Match Continue — CDS",
+  "short_name": "Match Continue",
+  "description": "Application de mobilisation pour le don de sang",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B2545",
+  "theme_color": "#0B2545",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/cds-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/cds-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
