@@ -27,6 +27,14 @@ interface DashboardData {
     en_litige: number;
     score: number;
   };
+  staff: {
+    recruteurs: number;
+    promesses_total: number;
+    presente: number;
+    recruteurs_presents: number;
+    en_attente: number;
+    en_litige: number;
+  };
   spontanes: number;
   totalPresents: number;
   objectifGlobal: number;
@@ -281,7 +289,7 @@ export default function PublicPage() {
         </div>
 
         {/* Footer stats */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <StatBox
             label="Donneurs spontanés"
             value={data?.spontanes ?? 0}
@@ -289,10 +297,20 @@ export default function PublicPage() {
             color="#2b88d8"
           />
           <StatBox
+            label="Staff mobilisation"
+            value={
+              (data?.staff.presente ?? 0) +
+              (data?.staff.recruteurs_presents ?? 0)
+            }
+            emoji="🎯"
+            color="#c9a227"
+          />
+          <StatBox
             label="Total promesses"
             value={
               (data?.garcons.promesses_total ?? 0) +
-              (data?.filles.promesses_total ?? 0)
+              (data?.filles.promesses_total ?? 0) +
+              (data?.staff.promesses_total ?? 0)
             }
             emoji="📝"
             color="#c9a227"
@@ -300,7 +318,9 @@ export default function PublicPage() {
           <StatBox
             label="Présences confirmées"
             value={
-              (data?.garcons.presente ?? 0) + (data?.filles.presente ?? 0)
+              (data?.garcons.presente ?? 0) +
+              (data?.filles.presente ?? 0) +
+              (data?.staff.presente ?? 0)
             }
             emoji="✅"
             color="#22c55e"

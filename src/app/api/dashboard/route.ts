@@ -6,7 +6,7 @@ import {
   donneursSpontanes,
   matchConfig,
 } from "@/db/schema";
-import { eq, count, isNotNull } from "drizzle-orm";
+import { eq, ne, and, count, isNotNull } from "drizzle-orm";
 
 export async function GET() {
   try {
@@ -18,7 +18,7 @@ export async function GET() {
       objectifGlobal: 50,
     };
 
-    // Promesses par équipe et statut
+    // Promesses par équipe et statut (hors staff)
     const promessesStats = await db
       .select({
         genre: participants.genre,
@@ -27,6 +27,7 @@ export async function GET() {
       })
       .from(promesses)
       .innerJoin(participants, eq(promesses.recruteurId, participants.id))
+      .where(ne(participants.roleParticipant, "staff"))
       .groupBy(participants.genre, promesses.statut);
 
     let garcons_en_attente = 0;
@@ -55,11 +56,37 @@ export async function GET() {
       .from(donneursSpontanes);
     const spontanes = Number(spontanesRows[0]?.nb ?? 0);
 
-    // Recruteurs présents (pointés J2)
+    // Promesses du staff par statut
+    const staffPromessesStats = await db
+      .select({
+        statut: promesses.statut,
+        nb: count(promesses.id),
+      })
+      .from(promesses)
+      .innerJoin(participants, eq(promesses.recruteurId, participants.id))
+      .where(eq(participants.roleParticipant, "staff"))
+      .groupBy(promesses.statut);
+
+    let staff_en_attente = 0;
+    let staff_presente = 0;
+    let staff_en_litige = 0;
+    for (const row of staffPromessesStats) {
+      const nb = Number(row.nb);
+      if (row.statut === "en_attente") staff_en_attente = nb;
+      else if (row.statut === "presente") staff_presente = nb;
+      else if (row.statut === "en_litige") staff_en_litige = nb;
+    }
+
+    // Recruteurs présents (pointés J2, hors staff)
     const recruteursPresentsRows = await db
       .select({ genre: participants.genre, nb: count(participants.id) })
       .from(participants)
-      .where(isNotNull(participants.timestampPointage))
+      .where(
+        and(
+          isNotNull(participants.timestampPointage),
+          ne(participants.roleParticipant, "staff")
+        )
+      )
       .groupBy(participants.genre);
 
     let recruteursPresentsGarcons = 0;
@@ -69,10 +96,30 @@ export async function GET() {
       else recruteursPresentsFilles = Number(r.nb);
     }
 
-    // Recruteurs
+    // Membres du staff présents (pointés J2)
+    const staffPresentsRows = await db
+      .select({ nb: count(participants.id) })
+      .from(participants)
+      .where(
+        and(
+          isNotNull(participants.timestampPointage),
+          eq(participants.roleParticipant, "staff")
+        )
+      );
+    const staffPresents = Number(staffPresentsRows[0]?.nb ?? 0);
+
+    // Membres du staff
+    const staffRows = await db
+      .select({ nb: count(participants.id) })
+      .from(participants)
+      .where(eq(participants.roleParticipant, "staff"));
+    const staffRecruteurs = Number(staffRows[0]?.nb ?? 0);
+
+    // Recruteurs (hors staff)
     const recruteursRows = await db
       .select({ genre: participants.genre, nb: count(participants.id) })
       .from(participants)
+      .where(ne(participants.roleParticipant, "staff"))
       .groupBy(participants.genre);
 
     let recruteursGarcons = 0;
@@ -87,6 +134,8 @@ export async function GET() {
       filles_presente +
       recruteursPresentsGarcons +
       recruteursPresentsFilles +
+      staff_presente +
+      staffPresents +
       spontanes;
 
     const scoreGarcons =
@@ -113,6 +162,14 @@ export async function GET() {
         recruteurs_presents: recruteursPresentsFilles,
         en_litige: filles_en_litige,
         score: scoreFilles,
+      },
+      staff: {
+        recruteurs: staffRecruteurs,
+        promesses_total: staff_en_attente + staff_presente + staff_en_litige,
+        en_attente: staff_en_attente,
+        presente: staff_presente,
+        recruteurs_presents: staffPresents,
+        en_litige: staff_en_litige,
       },
       spontanes,
       totalPresents,

@@ -46,6 +46,7 @@ export async function GET(req: NextRequest) {
               nom: recruteur.nom,
               genre: recruteur.genre,
               telephone: recruteur.telephone,
+              roleParticipant: recruteur.roleParticipant,
             }
           : null,
       });

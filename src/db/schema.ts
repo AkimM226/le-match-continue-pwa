@@ -11,7 +11,7 @@ import { relations } from "drizzle-orm";
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 export const genreEnum = pgEnum("genre", ["M", "F"]);
-export const roleEnum = pgEnum("role_recruteur", ["joueur", "spectateur"]);
+export const roleEnum = pgEnum("role_recruteur", ["joueur", "spectateur", "staff"]);
 export const statutPromesseEnum = pgEnum("statut_promesse", [
   "en_attente",
   "presente",

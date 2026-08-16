@@ -16,7 +16,7 @@ interface FormData {
   nom: string;
   telephone: string;
   genre: "M" | "F" | "";
-  roleParticipant: "joueur" | "spectateur";
+  roleParticipant: "joueur" | "spectateur" | "staff";
   promesses: PromesseInput[];
 }
 
@@ -268,7 +268,7 @@ function SaisieContent() {
           {/* Équipe */}
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-2">
-              Équipe *
+              {form.roleParticipant === "staff" ? "Genre *" : "Équipe *"}
             </label>
             <div className="grid grid-cols-2 gap-3">
               <button
@@ -306,22 +306,38 @@ function SaisieContent() {
             <label className="block text-xs font-semibold text-gray-600 mb-2">
               Statut
             </label>
-            <div className="grid grid-cols-2 gap-3">
-              {(["spectateur", "joueur"] as const).map((r) => (
+            <div className="grid grid-cols-3 gap-2">
+              {(["spectateur", "joueur", "staff"] as const).map((r) => (
                 <button
                   key={r}
                   type="button"
                   onClick={() => setForm({ ...form, roleParticipant: r })}
-                  className={`h-10 rounded-lg border-2 font-semibold text-sm transition-all capitalize ${
+                  className={`h-10 rounded-lg border-2 font-semibold text-xs transition-all capitalize ${
                     form.roleParticipant === r
                       ? "border-gray-700 bg-gray-800 text-white"
                       : "border-gray-200 bg-white text-gray-600 hover:border-gray-400"
                   }`}
                 >
-                  {r === "joueur" ? "⚽ Joueur" : "👁️ Spectateur"}
+                  {r === "joueur"
+                    ? "⚽ Joueur"
+                    : r === "spectateur"
+                    ? "👁️ Spectateur"
+                    : "🎯 Staff"}
                 </button>
               ))}
             </div>
+            {form.roleParticipant === "staff" && (
+              <p
+                className="text-xs mt-2 rounded-lg p-2"
+                style={{
+                  backgroundColor: "rgba(201,162,39,0.1)",
+                  color: "#7a5c00",
+                }}
+              >
+                🎯 Staff mobilisation : ses recrutements comptent dans
+                l&apos;objectif global mais pas dans le match Garçons vs Filles.
+              </p>
+            )}
           </div>
         </div>
 

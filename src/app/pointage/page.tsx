@@ -19,6 +19,7 @@ type SearchResult =
         nom: string;
         genre: "M" | "F";
         telephone: string;
+        roleParticipant: "joueur" | "spectateur" | "staff";
       } | null;
     }
   | {
@@ -28,7 +29,7 @@ type SearchResult =
         nom: string;
         genre: "M" | "F";
         telephone: string;
-        roleParticipant: "joueur" | "spectateur";
+        roleParticipant: "joueur" | "spectateur" | "staff";
         timestampPointage: string | null;
       };
     }
@@ -97,9 +98,12 @@ function PointageContent() {
       } else {
         setActionMsg({
           type: "success",
-          msg: `✅ Présence confirmée ! Point accordé à l'équipe ${
-            result.recruteur?.genre === "M" ? "Garçons 🧑" : "Filles 👩"
-          }`,
+          msg:
+            result.recruteur?.roleParticipant === "staff"
+              ? "✅ Présence confirmée ! Comptabilisée dans l'objectif global 🎯 (recrutement Staff)"
+              : `✅ Présence confirmée ! Point accordé à l'équipe ${
+                  result.recruteur?.genre === "M" ? "Garçons 🧑" : "Filles 👩"
+                }`,
         });
         setResult(null);
         setTelephone("");
@@ -139,9 +143,12 @@ function PointageContent() {
       } else {
         setActionMsg({
           type: "success",
-          msg: `✅ Présence confirmée ! Point accordé à l'équipe ${
-            result.recruteur.genre === "M" ? "Garçons 🧑" : "Filles 👩"
-          }`,
+          msg:
+            result.recruteur.roleParticipant === "staff"
+              ? "✅ Présence confirmée ! Comptabilisée dans l'objectif global 🎯 (Staff)"
+              : `✅ Présence confirmée ! Point accordé à l'équipe ${
+                  result.recruteur.genre === "M" ? "Garçons 🧑" : "Filles 👩"
+                }`,
         });
         setResult(null);
         setTelephone("");
@@ -324,17 +331,27 @@ function PointageContent() {
               >
                 <p className="text-xs text-gray-500 mb-1">Recruteur</p>
                 <p className="font-bold text-sm">
-                  {result.recruteur?.genre === "M" ? "🧑" : "👩"}{" "}
+                  {result.recruteur?.roleParticipant === "staff"
+                    ? "🎯"
+                    : result.recruteur?.genre === "M"
+                    ? "🧑"
+                    : "👩"}{" "}
                   {result.recruteur?.nom ?? "Inconnu"}
                 </p>
                 <span
                   className={
-                    result.recruteur?.genre === "M"
+                    result.recruteur?.roleParticipant === "staff"
+                      ? "badge-attente"
+                      : result.recruteur?.genre === "M"
                       ? "badge-garcons"
                       : "badge-filles"
                   }
                 >
-                  Équipe {result.recruteur?.genre === "M" ? "Garçons" : "Filles"}
+                  {result.recruteur?.roleParticipant === "staff"
+                    ? "🎯 Staff Mobilisation"
+                    : `Équipe ${
+                        result.recruteur?.genre === "M" ? "Garçons" : "Filles"
+                      }`}
                 </span>
               </div>
 
@@ -411,16 +428,28 @@ function PointageContent() {
                 }
               >
                 <p className="text-xs text-gray-500 mb-1">
-                  Recruteur ({result.recruteur.roleParticipant === "joueur" ? "Joueur" : "Spectateur"})
+                  {result.recruteur.roleParticipant === "staff"
+                    ? "Membre du Staff"
+                    : `Recruteur (${
+                        result.recruteur.roleParticipant === "joueur"
+                          ? "Joueur"
+                          : "Spectateur"
+                      })`}
                 </p>
                 <span
                   className={
-                    result.recruteur.genre === "M"
+                    result.recruteur.roleParticipant === "staff"
+                      ? "badge-attente"
+                      : result.recruteur.genre === "M"
                       ? "badge-garcons"
                       : "badge-filles"
                   }
                 >
-                  Équipe {result.recruteur.genre === "M" ? "Garçons" : "Filles"}
+                  {result.recruteur.roleParticipant === "staff"
+                    ? "🎯 Staff Mobilisation"
+                    : `Équipe ${
+                        result.recruteur.genre === "M" ? "Garçons" : "Filles"
+                      }`}
                 </span>
               </div>
 

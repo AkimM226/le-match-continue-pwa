@@ -29,6 +29,14 @@ interface DashboardData {
     en_litige: number;
     score: number;
   };
+  staff: {
+    recruteurs: number;
+    promesses_total: number;
+    presente: number;
+    recruteurs_presents: number;
+    en_attente: number;
+    en_litige: number;
+  };
   spontanes: number;
   totalPresents: number;
   objectifGlobal: number;
@@ -105,13 +113,19 @@ function DashboardContent() {
     );
   }
 
-  const totalLitiges = data.garcons.en_litige + data.filles.en_litige;
-  const totalPromesses = data.garcons.promesses_total + data.filles.promesses_total;
+  const totalLitiges =
+    data.garcons.en_litige + data.filles.en_litige + data.staff.en_litige;
+  const totalPromesses =
+    data.garcons.promesses_total +
+    data.filles.promesses_total +
+    data.staff.promesses_total;
   const totalPresences =
     data.garcons.presente +
     data.filles.presente +
     data.garcons.recruteurs_presents +
-    data.filles.recruteurs_presents;
+    data.filles.recruteurs_presents +
+    data.staff.presente +
+    data.staff.recruteurs_presents;
   const totalRecruteurs = data.garcons.recruteurs + data.filles.recruteurs;
 
   return (
@@ -217,6 +231,14 @@ function DashboardContent() {
             sub="donneurs"
             color="rgba(43,136,216,0.08)"
             textColor="var(--cds-bleu-ciel)"
+          />
+          <StatMiniCard
+            emoji="🎯"
+            label="Staff mobilisation"
+            value={data.staff.presente + data.staff.recruteurs_presents}
+            sub={`${data.staff.recruteurs} membre(s) · ${data.staff.promesses_total} promesse(s)`}
+            color="rgba(201,162,39,0.1)"
+            textColor="var(--cds-or)"
           />
           {totalLitiges > 0 && (
             <StatMiniCard
