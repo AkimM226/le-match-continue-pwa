@@ -27,27 +27,15 @@ export async function POST() {
       await db.insert(benevoles).values([
         {
           id: newId(),
-          prenom: "Kofi",
-          pin: "1234",
+          prenom: "Akim",
+          pin: "1305",
           role: "organisateur",
         },
         {
           id: newId(),
-          prenom: "Aminata",
-          pin: "2345",
-          role: "benevole",
-        },
-        {
-          id: newId(),
-          prenom: "Seydou",
-          pin: "3456",
-          role: "benevole",
-        },
-        {
-          id: newId(),
-          prenom: "Mariam",
-          pin: "4567",
-          role: "benevole",
+          prenom: "Nathanael",
+          pin: "1805",
+          role: "organisateur",
         },
       ]);
     }

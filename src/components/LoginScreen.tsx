@@ -220,38 +220,6 @@ export default function LoginScreen() {
           </p>
         </div>
 
-        {/* Demo codes */}
-        <div
-          className="mt-4 p-4 rounded-xl text-center"
-          style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.08)",
-          }}
-        >
-          <p className="text-blue-300 text-xs font-bold mb-2 uppercase tracking-wide">
-            🔑 Codes démo
-          </p>
-          <div className="text-xs text-blue-200 space-y-1">
-            <p>
-              Kofi (organisateur) :{" "}
-              <span className="font-mono font-bold" style={{ color: "var(--cds-or)" }}>
-                1234
-              </span>
-            </p>
-            <p>
-              Aminata (bénévole) :{" "}
-              <span className="font-mono font-bold" style={{ color: "var(--cds-or)" }}>
-                2345
-              </span>
-            </p>
-            <p>
-              Seydou (bénévole) :{" "}
-              <span className="font-mono font-bold" style={{ color: "var(--cds-or)" }}>
-                3456
-              </span>
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   );
