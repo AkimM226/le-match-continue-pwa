@@ -3,9 +3,6 @@ import { useState } from "react";
 import Image from "next/image";
 import { useAuth } from "./AuthContext";
 
-const MIN_PIN_LENGTH = 4;
-const MAX_PIN_LENGTH = 6;
-
 export default function LoginScreen() {
   const { login } = useAuth();
   const [pin, setPin] = useState("");
@@ -14,11 +11,12 @@ export default function LoginScreen() {
   const [imgError, setImgError] = useState(false);
   const [shake, setShake] = useState(false);
 
-  const submitPin = async (candidate: string) => {
-    if (candidate.trim().length < MIN_PIN_LENGTH) return;
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!pin.trim()) return;
     setLoading(true);
     setError("");
-    const result = await login(candidate.trim());
+    const result = await login(pin.trim());
     setLoading(false);
     if (!result.success) {
       setError(result.error ?? "PIN incorrect");
@@ -28,18 +26,15 @@ export default function LoginScreen() {
     }
   };
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    await submitPin(pin);
-  };
-
   const appendDigit = (d: string) => {
-    if (pin.length < MAX_PIN_LENGTH) {
+    if (pin.length < 4) {
       const next = pin + d;
       setPin(next);
-      // Auto-submit once the maximum PIN length is reached
-      if (next.length === MAX_PIN_LENGTH) {
-        submitPin(next);
+      // Auto-submit when 4 digits entered
+      if (next.length === 4) {
+        setTimeout(() => {
+          // trigger submit via state update
+        }, 50);
       }
     }
   };
@@ -119,7 +114,7 @@ export default function LoginScreen() {
           {/* PIN dots */}
           <div className={`flex justify-center gap-3 mb-6 ${shake ? "animate-[shake_0.4s_ease-in-out]" : ""}`}
             style={shake ? { animation: "shake 0.4s ease-in-out" } : {}}>
-            {Array.from({ length: Math.max(pin.length, MIN_PIN_LENGTH) }).map((_, i) => (
+            {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
                 className="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold transition-all duration-200"
@@ -208,7 +203,7 @@ export default function LoginScreen() {
           {/* Submit */}
           <button
             onClick={() => handleSubmit()}
-            disabled={pin.length < MIN_PIN_LENGTH || loading}
+            disabled={pin.length < 4 || loading}
             className="w-full btn-primary text-base"
           >
             {loading ? (

@@ -2,6 +2,7 @@ import {
   pgTable,
   text,
   varchar,
+  char,
   integer,
   timestamp,
   pgEnum,
@@ -21,7 +22,7 @@ export const statutPromesseEnum = pgEnum("statut_promesse", [
 export const benevoles = pgTable("benevoles", {
   id: varchar("id", { length: 36 }).primaryKey(),
   prenom: varchar("prenom", { length: 100 }).notNull(),
-  pin: varchar("pin", { length: 6 }).notNull(),
+  pin: char("pin", { length: 6 }).notNull(),
   role: varchar("role", { length: 20 }).notNull().default("benevole"), // 'benevole' | 'organisateur'
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
