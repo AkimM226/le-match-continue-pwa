@@ -2,7 +2,6 @@ import {
   pgTable,
   text,
   varchar,
-  char,
   integer,
   timestamp,
   pgEnum,
@@ -11,7 +10,7 @@ import { relations } from "drizzle-orm";
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 export const genreEnum = pgEnum("genre", ["M", "F"]);
-export const roleEnum = pgEnum("role_recruteur", ["joueur", "spectateur"]);
+export const roleEnum = pgEnum("role_recruteur", ["joueur", "spectateur", "staff"]);
 export const statutPromesseEnum = pgEnum("statut_promesse", [
   "en_attente",
   "presente",
@@ -22,7 +21,7 @@ export const statutPromesseEnum = pgEnum("statut_promesse", [
 export const benevoles = pgTable("benevoles", {
   id: varchar("id", { length: 36 }).primaryKey(),
   prenom: varchar("prenom", { length: 100 }).notNull(),
-  pin: char("pin", { length: 6 }).notNull(),
+  pin: varchar("pin", { length: 6 }).notNull(),
   role: varchar("role", { length: 20 }).notNull().default("benevole"), // 'benevole' | 'organisateur'
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -44,6 +43,8 @@ export const participants = pgTable("participants", {
   genre: genreEnum("genre").notNull(),
   roleParticipant: roleEnum("role_participant").notNull(),
   saisiParBenevoleId: varchar("saisi_par_benevole_id", { length: 36 }),
+  pointeParBenevoleId: varchar("pointe_par_benevole_id", { length: 36 }),
+  timestampPointage: timestamp("timestamp_pointage"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

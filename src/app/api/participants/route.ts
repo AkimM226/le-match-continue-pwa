@@ -85,7 +85,10 @@ export async function POST(req: NextRequest) {
       nom: nom.trim(),
       telephone: telNorm,
       genre: genre as "M" | "F",
-      roleParticipant: (roleParticipant ?? "spectateur") as "joueur" | "spectateur",
+      roleParticipant: (roleParticipant ?? "spectateur") as
+        | "joueur"
+        | "spectateur"
+        | "staff",
       saisiParBenevoleId: benevoleId ?? null,
     });
 

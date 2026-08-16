@@ -19,7 +19,19 @@ type SearchResult =
         nom: string;
         genre: "M" | "F";
         telephone: string;
+        roleParticipant: "joueur" | "spectateur" | "staff";
       } | null;
+    }
+  | {
+      type: "recruteur";
+      recruteur: {
+        id: string;
+        nom: string;
+        genre: "M" | "F";
+        telephone: string;
+        roleParticipant: "joueur" | "spectateur" | "staff";
+        timestampPointage: string | null;
+      };
     }
   | { type: "spontane_deja_enregistre"; spontane: { nom: string; telephone: string; timestampPointage: string } }
   | { type: "non_trouve"; telephone: string }
@@ -86,9 +98,57 @@ function PointageContent() {
       } else {
         setActionMsg({
           type: "success",
-          msg: `✅ Présence confirmée ! Point accordé à l'équipe ${
-            result.recruteur?.genre === "M" ? "Garçons 🧑" : "Filles 👩"
-          }`,
+          msg:
+            result.recruteur?.roleParticipant === "staff"
+              ? "✅ Présence confirmée ! Comptabilisée dans l'objectif global 🎯 (recrutement Staff)"
+              : `✅ Présence confirmée ! Point accordé à l'équipe ${
+                  result.recruteur?.genre === "M" ? "Garçons 🧑" : "Filles 👩"
+                }`,
+        });
+        setResult(null);
+        setTelephone("");
+        setTimeout(() => inputRef.current?.focus(), 100);
+      }
+    } catch {
+      setActionMsg({ type: "error", msg: "Erreur réseau" });
+    } finally {
+      setValidating(false);
+    }
+  };
+
+  const handleValiderPresenceRecruteur = async () => {
+    if (result?.type !== "recruteur") return;
+    setValidating(true);
+
+    try {
+      const res = await fetch("/api/pointage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "valider_presence_recruteur",
+          participantId: result.recruteur.id,
+          telephone: telephone,
+          benevoleId: user?.id,
+        }),
+      });
+      const data = await res.json();
+
+      if (res.status === 409) {
+        setActionMsg({
+          type: "error",
+          msg: data.message ?? "Recruteur déjà pointé",
+        });
+      } else if (!res.ok) {
+        setActionMsg({ type: "error", msg: data.error ?? "Erreur" });
+      } else {
+        setActionMsg({
+          type: "success",
+          msg:
+            result.recruteur.roleParticipant === "staff"
+              ? "✅ Présence confirmée ! Comptabilisée dans l'objectif global 🎯 (Staff)"
+              : `✅ Présence confirmée ! Point accordé à l'équipe ${
+                  result.recruteur.genre === "M" ? "Garçons 🧑" : "Filles 👩"
+                }`,
         });
         setResult(null);
         setTelephone("");
@@ -271,17 +331,27 @@ function PointageContent() {
               >
                 <p className="text-xs text-gray-500 mb-1">Recruteur</p>
                 <p className="font-bold text-sm">
-                  {result.recruteur?.genre === "M" ? "🧑" : "👩"}{" "}
+                  {result.recruteur?.roleParticipant === "staff"
+                    ? "🎯"
+                    : result.recruteur?.genre === "M"
+                    ? "🧑"
+                    : "👩"}{" "}
                   {result.recruteur?.nom ?? "Inconnu"}
                 </p>
                 <span
                   className={
-                    result.recruteur?.genre === "M"
+                    result.recruteur?.roleParticipant === "staff"
+                      ? "badge-attente"
+                      : result.recruteur?.genre === "M"
                       ? "badge-garcons"
                       : "badge-filles"
                   }
                 >
-                  Équipe {result.recruteur?.genre === "M" ? "Garçons" : "Filles"}
+                  {result.recruteur?.roleParticipant === "staff"
+                    ? "🎯 Staff Mobilisation"
+                    : `Équipe ${
+                        result.recruteur?.genre === "M" ? "Garçons" : "Filles"
+                      }`}
                 </span>
               </div>
 
@@ -317,6 +387,89 @@ function PointageContent() {
                     ⚠️ Promesse en litige — arbitrage organisateur requis
                   </p>
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* ── CAS A bis : Recruteur trouvé ── */}
+          {result.type === "recruteur" && (
+            <div
+              className={`card border-2 ${
+                result.recruteur.timestampPointage
+                  ? "border-green-300"
+                  : "border-blue-300"
+              }`}
+            >
+              <div className="text-center mb-4">
+                <div className="text-5xl mb-2">
+                  {result.recruteur.timestampPointage ? "✅" : "🧑‍🤝‍🧑"}
+                </div>
+                <h3 className="text-2xl font-black" style={{ color: "var(--cds-bleu-nuit)" }}>
+                  {result.recruteur.nom}
+                </h3>
+                <p className="text-gray-500 font-mono text-sm mt-1">
+                  {formatPhoneDisplay(result.recruteur.telephone)}
+                </p>
+              </div>
+
+              <div
+                className={`rounded-xl p-3 mb-4 text-center ${
+                  result.recruteur.genre === "M"
+                    ? "bg-blue-50 border border-blue-200"
+                    : "border"
+                }`}
+                style={
+                  result.recruteur.genre === "F"
+                    ? {
+                        backgroundColor: "rgba(201,162,39,0.08)",
+                        borderColor: "rgba(201,162,39,0.4)",
+                      }
+                    : {}
+                }
+              >
+                <p className="text-xs text-gray-500 mb-1">
+                  {result.recruteur.roleParticipant === "staff"
+                    ? "Membre du Staff"
+                    : `Recruteur (${
+                        result.recruteur.roleParticipant === "joueur"
+                          ? "Joueur"
+                          : "Spectateur"
+                      })`}
+                </p>
+                <span
+                  className={
+                    result.recruteur.roleParticipant === "staff"
+                      ? "badge-attente"
+                      : result.recruteur.genre === "M"
+                      ? "badge-garcons"
+                      : "badge-filles"
+                  }
+                >
+                  {result.recruteur.roleParticipant === "staff"
+                    ? "🎯 Staff Mobilisation"
+                    : `Équipe ${
+                        result.recruteur.genre === "M" ? "Garçons" : "Filles"
+                      }`}
+                </span>
+              </div>
+
+              {result.recruteur.timestampPointage ? (
+                <div className="bg-green-50 border border-green-300 rounded-xl p-4 text-center">
+                  <p className="font-bold text-green-700">✅ Déjà pointé</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    à{" "}
+                    {new Date(result.recruteur.timestampPointage).toLocaleTimeString("fr-FR")}
+                  </p>
+                </div>
+              ) : (
+                <button
+                  onClick={handleValiderPresenceRecruteur}
+                  disabled={validating}
+                  className="w-full btn-primary text-lg"
+                  style={{ minHeight: "64px" }}
+                >
+                  {validating ? "⏳ Validation…" : "✅ Confirmer la Présence"}
+                </button>
               )}
             </div>
           )}

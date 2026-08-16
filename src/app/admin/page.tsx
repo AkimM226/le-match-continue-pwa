@@ -39,20 +39,10 @@ function AdminContent() {
   const [newBenevole, setNewBenevole] = useState({ prenom: "", pin: "", role: "benevole" });
   const [addingBenevole, setAddingBenevole] = useState(false);
   const [benevoleMsg, setBenevoleMsg] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"config" | "litiges" | "benevoles">("config");
 
-  // Guard: only organisateur
-  if (user?.role !== "organisateur") {
-    return (
-      <div className="card text-center py-10">
-        <div className="text-5xl mb-4">🔒</div>
-        <p className="font-bold text-gray-700">Accès réservé à l'organisateur</p>
-        <p className="text-sm text-gray-500 mt-2">
-          Connectez-vous avec un compte organisateur (PIN 1234)
-        </p>
-      </div>
-    );
-  }
+  const isOrganisateur = user?.role === "organisateur";
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -70,8 +60,23 @@ function AdminContent() {
   }, []);
 
   useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+    if (isOrganisateur) {
+      fetchAll();
+    }
+  }, [isOrganisateur, fetchAll]);
+
+  // Guard: only organisateur
+  if (!isOrganisateur) {
+    return (
+      <div className="card text-center py-10">
+        <div className="text-5xl mb-4">🔒</div>
+        <p className="font-bold text-gray-700">Accès réservé à l&apos;organisateur</p>
+        <p className="text-sm text-gray-500 mt-2">
+          Connectez-vous avec un compte organisateur
+        </p>
+      </div>
+    );
+  }
 
   const saveConfig = async () => {
     const res = await fetch("/api/config", {
@@ -111,6 +116,25 @@ function AdminContent() {
       setTimeout(() => setBenevoleMsg(null), 3000);
     }
     setAddingBenevole(false);
+  };
+
+  const deleteBenevole = async (b: Benevole) => {
+    if (!confirm(`Supprimer ${b.prenom} ? Cette action est définitive.`)) return;
+    setDeletingId(b.id);
+    const res = await fetch("/api/benevoles", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: b.id, requesterId: user.id }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setBenevoleMsg(`🗑️ ${b.prenom} supprimé`);
+      setBenevoles((list) => list.filter((x) => x.id !== b.id));
+    } else {
+      setBenevoleMsg(`❌ ${data.error ?? "Erreur lors de la suppression"}`);
+    }
+    setTimeout(() => setBenevoleMsg(null), 3000);
+    setDeletingId(null);
   };
 
   const tabs = [
@@ -427,15 +451,28 @@ function AdminContent() {
                           {b.role}
                         </p>
                       </div>
-                      <span
-                        className={
-                          b.role === "organisateur"
-                            ? "badge-garcons"
-                            : "badge-attente"
-                        }
-                      >
-                        {b.role === "organisateur" ? "⚙️ Orga" : "🙋 Bénévole"}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={
+                            b.role === "organisateur"
+                              ? "badge-garcons"
+                              : "badge-attente"
+                          }
+                        >
+                          {b.role === "organisateur" ? "⚙️ Orga" : "🙋 Bénévole"}
+                        </span>
+                        {b.id !== user.id && (
+                          <button
+                            onClick={() => deleteBenevole(b)}
+                            disabled={deletingId === b.id}
+                            className="text-red-500 hover:text-red-700 disabled:opacity-50 p-2"
+                            title={`Supprimer ${b.prenom}`}
+                            aria-label={`Supprimer ${b.prenom}`}
+                          >
+                            {deletingId === b.id ? "⏳" : "🗑️"}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
